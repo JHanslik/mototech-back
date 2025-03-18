@@ -1,5 +1,6 @@
 import express, { Request, Response, RequestHandler } from "express";
 import mongoose from "mongoose";
+import cors from "cors";
 import Product from "./models/Product";
 import User from "./models/User";
 import Order from "./models/Order";
@@ -9,6 +10,13 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Connect to MongoDB
 mongoose
@@ -41,7 +49,24 @@ app.post("/api/products", async (req: Request, res: Response) => {
   }
 });
 
-// Routes pour les produits
+// Routes pour un produit spécifique
+app.get(
+  "/api/products/:id",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const product = await Product.findById(req.params.id);
+      if (!product) {
+        res.status(404).json({ error: "Produit non trouvé" });
+        return;
+      }
+      res.json(product);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// Routes pour modifier et supprimer un produit
 app
   .route("/api/products/:id")
   .put((req: Request, res: Response) => {
