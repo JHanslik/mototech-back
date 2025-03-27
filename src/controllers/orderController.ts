@@ -10,7 +10,7 @@ export const getUserOrders = async (
 
     // Récupérer toutes les commandes de l'utilisateur avec les détails des produits
     const orders = await Order.find({ userId })
-      .populate("productId")
+      .populate("items.productId")
       .sort({ createdAt: -1 });
 
     res.status(200).json(orders);
@@ -24,12 +24,20 @@ export const createOrder = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { productId, quantity } = req.body;
+    const { items, totalAmount } = req.body;
     const userId = (req as any).user.id;
 
+    // Vérifier que items est un tableau non vide
+    if (!Array.isArray(items) || items.length === 0) {
+      res
+        .status(400)
+        .json({ message: "La commande doit contenir au moins un produit" });
+      return;
+    }
+
     const newOrder = new Order({
-      productId,
-      quantity,
+      items,
+      totalAmount,
       userId,
       status: "pending",
     });
