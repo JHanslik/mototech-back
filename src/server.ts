@@ -4,6 +4,7 @@ import cors from "cors";
 import Product from "./models/Product";
 import User from "./models/User";
 import Order from "./models/Order";
+import authRoutes from "./routes/auth";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,6 +29,9 @@ mongoose
 app.get("/", (req, res) => {
   res.send("Welcome to the E-commerce API");
 });
+
+// Routes d'authentification
+app.use("/api/auth", authRoutes);
 
 // Routes
 app.get("/api/products", async (req: Request, res: Response) => {
