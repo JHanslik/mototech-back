@@ -104,3 +104,60 @@ export const getCurrentUser = async (
     res.status(500).json({ message: error.message });
   }
 };
+
+export const updateUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = (req as any).user.id;
+    const { username, email, currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: "Utilisateur non trouvé" });
+      return;
+    }
+
+    // Mise à jour des informations de base
+    const updatedFields: {
+      username?: string;
+      email?: string;
+      password?: string;
+    } = {};
+
+    if (username) updatedFields.username = username;
+    if (email) updatedFields.email = email;
+
+    // Si l'utilisateur souhaite changer de mot de passe
+    if (currentPassword && newPassword) {
+      // Vérifier que l'ancien mot de passe est correct
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password
+      );
+      if (!isPasswordValid) {
+        res.status(400).json({ message: "Mot de passe actuel incorrect" });
+        return;
+      }
+
+      // Hasher le nouveau mot de passe
+      const salt = await bcrypt.genSalt(10);
+      updatedFields.password = await bcrypt.hash(newPassword, salt);
+    }
+
+    // Mettre à jour l'utilisateur
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updatedFields },
+      { new: true }
+    ).select("-password");
+
+    res.status(200).json({
+      message: "Profil mis à jour avec succès",
+      user: updatedUser,
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};

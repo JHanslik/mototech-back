@@ -5,6 +5,7 @@ import Product from "./models/Product";
 import User from "./models/User";
 import Order from "./models/Order";
 import authRoutes from "./routes/auth";
+import orderRoutes from "./routes/orders";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,6 +33,9 @@ app.get("/", (req, res) => {
 
 // Routes d'authentification
 app.use("/api/auth", authRoutes);
+
+// Routes de commandes
+app.use("/api/orders", orderRoutes);
 
 // Routes
 app.get("/api/products", async (req: Request, res: Response) => {
